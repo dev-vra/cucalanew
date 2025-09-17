@@ -1,0 +1,17 @@
+# Principais bibliotecas para manipulação de dados
+pandas==2.2.2 --only-binary :all:
+numpy==2.1.0 --only-binary :all:
+openpyxl==3.1.2 --only-binary :all:
+
+# Biblioteca para a interface gráfica (GUI)
+customtkinter
+
+# Dependência do customtkinter para manipulação de imagens (logo)
+Pillow
+
+# Utilitário para análise e conversão de datas
+python-dateutil
+
+# Ferramenta para empacotar a aplicação em um executável
+# (Não é necessário para rodar o script, mas sim para o processo de build)
+pyinstaller
