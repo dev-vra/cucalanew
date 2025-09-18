@@ -35,11 +35,6 @@ jobs:
         pyinstaller --clean --noconfirm consolidador.spec
         pyinstaller --noconfirm gerenciador.spec
 
-    - name: Rename .app bundles
-      run: |
-        # Renomeia os bundles para refletir a arquitetura
-        mv "dist/Consolidador.app" "dist/Consolidador-arm64.app"
-        mv "dist/Gerenciador.app" "dist/Gerenciador-arm64.app"
 
     # ETAPA REMOVIDA: A criação de app universal foi removida pois não há mais build Intel.
 
