@@ -1,0 +1,100 @@
+name: Build and Package
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    # A compilação agora roda apenas em macos-latest (Apple Silicon)
+    runs-on: macos-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+        # Arquitetura definida diretamente como arm64
+        architecture: 'arm64'
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install --no-cache-dir -r requirements.txt
+        pip install --no-cache-dir pyinstaller==6.3.0
+
+    - name: Build executables
+      run: |
+        # Gera o executável para arm64
+        pyinstaller --clean --noconfirm consolidador.spec
+        pyinstaller --noconfirm gerenciador.spec
+
+    - name: Rename .app bundles
+      run: |
+        # Renomeia os bundles para refletir a arquitetura
+        mv "dist/Consolidador.app" "dist/Consolidador-arm64.app"
+        mv "dist/Gerenciador.app" "dist/Gerenciador-arm64.app"
+
+    # ETAPA REMOVIDA: A criação de app universal foi removida pois não há mais build Intel.
+
+    - name: Create DMG
+      run: |
+        # Instala a ferramenta para criar o DMG
+        brew install create-dmg
+        
+        # Cria DMG para Consolidador (arm64)
+        create-dmg \
+          --volname "Consolidador" \
+          --volicon "assets/icon.icns" \
+          --window-pos 200 120 \
+          --window-size 800 400 \
+          --icon-size 100 \
+          --icon "Consolidador-arm64.app" 200 190 \
+          --hide-extension "Consolidador-arm64.app" \
+          --app-drop-link 600 185 \
+          "dist/Consolidador.dmg" \
+          "dist/Consolidador-arm64.app"
+        
+        echo "Pausing for 5 seconds to prevent resource busy errors..."
+        sleep 5  
+
+        # Cria DMG para Gerenciador (arm64)
+        create-dmg \
+          --volname "Gerenciador" \
+          --volicon "assets/icon.icns" \
+          --window-pos 200 120 \
+          --window-size 800 400 \
+          --icon-size 100 \
+          --icon "Gerenciador-arm64.app" 200 190 \
+          --hide-extension "Gerenciador-arm64.app" \
+          --app-drop-link 600 185 \
+          "dist/Gerenciador.dmg" \
+          "dist/Gerenciador-arm64.app"
+
+    - name: Upload artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        # O nome do artefato agora reflete a arquitetura única
+        name: macos-apps-arm64
+        path: |
+          dist/*.app
+          dist/*.dmg
+        retention-days: 7
+
+    - name: Create release (on tag)
+      # A condição foi simplificada, pois agora só há um job
+      if: startsWith(github.ref, 'refs/tags/v')
+      uses: softprops/action-gh-release@v2
+      with:
+        files: |
+          dist/Consolidador.dmg
+          dist/Gerenciador.dmg
+        draft: false
+        prerelease: false
+        generate_release_notes: true
