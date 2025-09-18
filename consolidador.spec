@@ -2,77 +2,61 @@
 
 block_cipher = None
 
-# Dados da aplicação
-app_name = 'Consolidador'
-app_version = '1.0.0'
-bundle_identifier = 'com.cucala.consolidador'
-
-# Obter a arquitetura de destino do ambiente
-import os
-target_arch = os.environ.get('TARGET_ARCH', None)
-
-# Configurações de análise
 a = Analysis(
-    ['consolidador.py'],
+    ['consolidador.py'],  # Nome do seu script principal
     pathex=[],
     binaries=[],
     datas=[
-        ('assets/*', 'assets'),
-        ('data/*.json', 'data'),
+        ('assets', 'assets')  # Correto: Inclui a pasta de assets
     ],
     hiddenimports=[
-        'pandas', 'openpyxl', 'customtkinter', 'PIL',
-        'tkinter', 'queue', 'json', 'pathlib', 'configparser'
+        'pandas',
+        'openpyxl',
+        'customtkinter',
+        'tkinter',
+        'PIL',
+        'dateutil.parser'
     ],
     hookspath=[],
     hooksconfig={},
     runtime_hooks=[],
     excludes=[],
-    win_no_prefer_redirects=False,
-    win_private_assemblies=False,
-    cipher=block_cipher,
-    noarchive=False,
+    cipher=block_cipher
 )
-
 pyz = PYZ(a.pure, a.zipped_data, cipher=block_cipher)
 
-# Configurações do executável
 exe = EXE(
     pyz,
     a.scripts,
-    a.binaries,
-    a.zipfiles,
-    a.datas,
     [],
-    name=app_name,
+    exclude_binaries=True,
+    name='Consolidador CUCALA',
     debug=False,
     bootloader_ignore_signals=False,
     strip=False,
     upx=True,
-    console=False,
+    console=False,  # Correto: Não abre um terminal
     disable_windowed_traceback=False,
-    argv_emulation=True,
-    target_arch=target_arch,
+    target_arch=None,
     codesign_identity=None,
-    entitlements_file=None,
-    icon='assets/icon.icns',
+    entitlements_file=None
 )
 
-# Configurações de coleta
-app = BUNDLE(
+coll = COLLECT(
     exe,
-    name=f'{app_name}.app',
-    icon='assets/icon.icns',
-    bundle_identifier=bundle_identifier,
-    info_plist={
-        'CFBundleName': app_name,
-        'CFBundleDisplayName': app_name,
-        'CFBundleVersion': app_version,
-        'CFBundleShortVersionString': app_version,
-        'CFBundleExecutable': app_name,
-        'CFBundleIdentifier': bundle_identifier,
-        'NSHighResolutionCapable': 'True',
-        'NSRequiresAquaSystemAppearance': 'False',
-        'LSMinimumSystemVersion': '10.15.0',
-    },
+    a.binaries,
+    a.zipfiles,
+    a.datas,
+    strip=False,
+    upx=True,
+    upx_exclude=[],
+    name='Consolidador CUCALA'
+)
+
+# Seção que cria o .app para macOS
+app = BUNDLE(
+    coll,
+    name='Consolidador CUCALA.app',
+    icon='assets/icon.icns',  # Caminho para o ícone no formato .icns
+    bundle_identifier='com.cucala.consolidador'  # Identificador único do app
 )
